@@ -1,18 +1,42 @@
 package main
 
 import (
-	"encoding/json"
+	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
 	chi "github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
+	"github.com/wipdev-tech/blogagg/internal/database"
 )
+
+type apiConfig struct {
+	DB *database.Queries
+}
 
 func main() {
 	godotenv.Load()
+	port := ":" + os.Getenv("PORT")
+	if port == "" {
+		log.Fatal("PORT environment variable is not set")
+	}
+
+	dbURL := os.Getenv("DBURL")
+	if dbURL == "" {
+		log.Fatal("DBURL environment variable is not set")
+	}
+
+	db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	api := apiConfig{}
+	api.DB = database.New(db)
 
 	r := chi.NewRouter()
 	r.Use(cors.Handler(cors.Options{}))
@@ -20,36 +44,11 @@ func main() {
 	rv1 := chi.NewRouter()
 	rv1.Get("/readiness", handleReady)
 	rv1.Get("/error", handleError)
+	rv1.Post("/users", api.handleCreateUser)
 
 	r.Mount("/v1", rv1)
 
-	port := ":" + os.Getenv("PORT")
 	server := http.Server{Addr: port, Handler: r}
 	fmt.Println("Listening at port", port)
 	server.ListenAndServe()
-}
-
-func respondWithJSON(w http.ResponseWriter, status int, payload interface{}) {
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(payload)
-}
-
-func respondWithError(w http.ResponseWriter, code int, msg string) {
-	errPayload := struct {
-		Error string `json:"error"`
-	}{Error: msg}
-	respondWithJSON(w, code, errPayload)
-}
-
-func handleReady(w http.ResponseWriter, r *http.Request) {
-	okPayload := struct {
-		Status string `json:"status"`
-	}{Status: "ok"}
-
-	respondWithJSON(w, http.StatusOK, okPayload)
-}
-
-func handleError(w http.ResponseWriter, r *http.Request) {
-	respondWithError(w, http.StatusInternalServerError, "Internal Server Error")
 }
