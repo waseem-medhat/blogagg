@@ -45,7 +45,7 @@ func main() {
 	rv1.Get("/readiness", handleReady)
 	rv1.Get("/error", handleError)
 	rv1.Post("/users", api.handleCreateUser)
-	rv1.Get("/users", api.handleGetUser)
+	rv1.Get("/users", api.middlewareAuth(api.handleUsersGet))
 
 	r.Mount("/v1", rv1)
 
