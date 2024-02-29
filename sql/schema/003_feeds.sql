@@ -5,10 +5,10 @@ CREATE TABLE feeds (
     updated_at TIMESTAMP NOT NULL,
     name TEXT NOT NULL,
     url TEXT NOT NULL,
-    user_id UUID,
+    user_id UUID NOT NULL,
     CONSTRAINT user_id_fk FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- +goose Down
-DROP TABLE users;
+DROP TABLE feeds;
 
