@@ -1,3 +1,4 @@
+// All feed-related handlers and types are here
 package main
 
 import (
@@ -15,7 +16,7 @@ type feed struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	Name      string    `json:"name"`
-	Url       string    `json:"url"`
+	URL       string    `json:"url"`
 	UserID    uuid.UUID `json:"user_id"`
 }
 
@@ -55,7 +56,7 @@ func dbFeedToFeed(dbFeed database.Feed) feed {
 		CreatedAt: dbFeed.CreatedAt,
 		UpdatedAt: dbFeed.UpdatedAt,
 		Name:      dbFeed.Name,
-		Url:       dbFeed.Url,
+		URL:       dbFeed.Url,
 		UserID:    dbFeed.UserID,
 	}
 }

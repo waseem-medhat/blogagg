@@ -19,7 +19,11 @@ type apiConfig struct {
 }
 
 func main() {
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	port := ":" + os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("PORT environment variable is not set")
@@ -52,5 +56,5 @@ func main() {
 
 	server := http.Server{Addr: port, Handler: r}
 	fmt.Println("Listening at port", port)
-	server.ListenAndServe()
+	log.Fatal(server.ListenAndServe())
 }

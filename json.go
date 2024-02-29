@@ -2,13 +2,17 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
 func respondWithJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(payload)
+	err := json.NewEncoder(w).Encode(payload)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func respondWithError(w http.ResponseWriter, code int, msg string) {

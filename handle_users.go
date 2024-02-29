@@ -20,7 +20,7 @@ func (api *apiConfig) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 		CreatedAt time.Time `json:"created_at"`
 		UpdatedAt time.Time `json:"updated_at"`
 		Name      string    `json:"name"`
-		ApiKey    string    `json:"api_key"`
+		APIKey    string    `json:"api_key"`
 	}
 
 	inUser := InUser{}
@@ -46,12 +46,12 @@ func (api *apiConfig) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 		CreatedAt: dbUser.CreatedAt,
 		UpdatedAt: dbUser.UpdatedAt,
 		Name:      dbUser.Name,
-		ApiKey:    dbUser.ApiKey,
+		APIKey:    dbUser.ApiKey,
 	}
 
 	respondWithJSON(w, http.StatusCreated, outUser)
 }
 
-func (api *apiConfig) handleUsersGet(w http.ResponseWriter, r *http.Request, dbUser database.User) {
+func (api *apiConfig) handleUsersGet(w http.ResponseWriter, _ *http.Request, dbUser database.User) {
 	respondWithJSON(w, http.StatusOK, dbUser)
 }

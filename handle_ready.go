@@ -2,7 +2,7 @@ package main
 
 import "net/http"
 
-func handleReady(w http.ResponseWriter, r *http.Request) {
+func handleReady(w http.ResponseWriter, _ *http.Request) {
 	okPayload := struct {
 		Status string `json:"status"`
 	}{Status: "ok"}
@@ -10,6 +10,6 @@ func handleReady(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, okPayload)
 }
 
-func handleError(w http.ResponseWriter, r *http.Request) {
+func handleError(w http.ResponseWriter, _ *http.Request) {
 	respondWithError(w, http.StatusInternalServerError, "Internal Server Error")
 }
