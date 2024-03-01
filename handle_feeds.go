@@ -3,7 +3,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"time"
 
@@ -44,10 +43,21 @@ func (api *apiConfig) handleFeedsCreate(w http.ResponseWriter, r *http.Request, 
 	})
 
 	if err != nil {
-		log.Fatal(err)
+		respondWithError(w, http.StatusConflict, "Duplicate!!!")
+		return
 	}
 
 	respondWithJSON(w, http.StatusCreated, dbFeedToFeed(dbFeed))
+}
+
+func (api *apiConfig) handleFeedsGet(w http.ResponseWriter, r *http.Request) {
+	dbFeeds, err := api.DB.GetFeeds(r.Context())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error retrieving feeds: "+err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, dbFeeds)
 }
 
 func dbFeedToFeed(dbFeed database.Feed) feed {

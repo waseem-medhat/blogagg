@@ -51,6 +51,7 @@ func main() {
 	rv1.Post("/users", api.handleCreateUser)
 	rv1.Get("/users", api.middlewareAuth(api.handleUsersGet))
 	rv1.Post("/feeds", api.middlewareAuth(api.handleFeedsCreate))
+	rv1.Get("/feeds", api.handleFeedsGet)
 
 	r.Mount("/v1", rv1)
 
