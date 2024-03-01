@@ -57,7 +57,12 @@ func (api *apiConfig) handleFeedsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, dbFeeds)
+	outFeeds := []feed{}
+	for _, dbf := range dbFeeds {
+		outFeeds = append(outFeeds, dbFeedToFeed(dbf))
+	}
+
+	respondWithJSON(w, http.StatusOK, outFeeds)
 }
 
 func dbFeedToFeed(dbFeed database.Feed) feed {
