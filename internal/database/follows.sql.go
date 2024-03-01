@@ -54,3 +54,38 @@ func (q *Queries) DeleteFollow(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, deleteFollow, id)
 	return err
 }
+
+const getFollows = `-- name: GetFollows :many
+SELECT id, feed_id, user_id, created_at, updated_at
+FROM follows
+WHERE user_id=$1
+`
+
+func (q *Queries) GetFollows(ctx context.Context, userID uuid.UUID) ([]Follow, error) {
+	rows, err := q.db.QueryContext(ctx, getFollows, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Follow
+	for rows.Next() {
+		var i Follow
+		if err := rows.Scan(
+			&i.ID,
+			&i.FeedID,
+			&i.UserID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

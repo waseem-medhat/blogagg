@@ -61,6 +61,21 @@ func (api *apiConfig) handleFollowsDelete(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusOK)
 }
 
+func (api *apiConfig) handleFollowsGet(w http.ResponseWriter, r *http.Request, dbUser database.User) {
+	dbFollows, err := api.DB.GetFollows(r.Context(), dbUser.ID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Couldn't get follows: "+err.Error())
+		return
+	}
+
+	outFollows := make([]follow, 0, len(dbFollows))
+	for _, dbf := range dbFollows {
+		outFollows = append(outFollows, dbFollowToFollow(dbf))
+	}
+
+	respondWithJSON(w, http.StatusOK, outFollows)
+}
+
 func dbFollowToFollow(f database.Follow) follow {
 	return follow{
 		ID:        f.ID,
