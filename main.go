@@ -56,6 +56,7 @@ func main() {
 	rv1.Get("/feeds", api.handleFeedsGet)
 
 	rv1.Post("/follows", api.middlewareAuth(api.handleFollowsCreate))
+	rv1.Delete("/follows/{followID}", api.middlewareAuth(api.handleFollowsDelete))
 
 	r.Mount("/v1", rv1)
 

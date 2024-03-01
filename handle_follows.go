@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/wipdev-tech/blogagg/internal/database"
 )
@@ -41,6 +42,23 @@ func (api *apiConfig) handleFollowsCreate(w http.ResponseWriter, r *http.Request
 	}
 
 	respondWithJSON(w, http.StatusCreated, dbFollowToFollow(dbFollow))
+}
+
+func (api *apiConfig) handleFollowsDelete(w http.ResponseWriter, r *http.Request, _ database.User) {
+	followID := chi.URLParam(r, "followID")
+	followUUID, err := uuid.Parse(followID)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Malformed follow ID: "+err.Error())
+		return
+	}
+
+	err = api.DB.DeleteFollow(r.Context(), followUUID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Couldn't delete: "+err.Error())
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func dbFollowToFollow(f database.Follow) follow {

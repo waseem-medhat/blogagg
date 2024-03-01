@@ -9,5 +9,8 @@ gdown:
 gstatus:
 	cd sql/schema && goose postgres ${DBURL} status
 
+sqlc:
+	sqlc generate
+
 lint:
 	golangci-lint run
