@@ -3,6 +3,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -17,6 +18,11 @@ type feed struct {
 	Name      string    `json:"name"`
 	URL       string    `json:"url"`
 	UserID    uuid.UUID `json:"user_id"`
+}
+
+type feedWithFollow struct {
+	Feed   feed   `json:"feed"`
+	Follow follow `json:"follow"`
 }
 
 func (api *apiConfig) handleFeedsCreate(w http.ResponseWriter, r *http.Request, dbUser database.User) {
@@ -47,7 +53,23 @@ func (api *apiConfig) handleFeedsCreate(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	respondWithJSON(w, http.StatusCreated, dbFeedToFeed(dbFeed))
+	dbFollow, err := api.DB.CreateFollow(r.Context(), database.CreateFollowParams{
+		ID:        uuid.New(),
+		FeedID:    dbFeed.ID,
+		UserID:    dbFeed.UserID,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	})
+	if err != nil {
+		fmt.Println("Couldn't create follow: ", err.Error())
+	}
+
+	payload := feedWithFollow{
+		Feed:   dbFeedToFeed(dbFeed),
+		Follow: dbFollowToFollow(dbFollow),
+	}
+
+	respondWithJSON(w, http.StatusCreated, payload)
 }
 
 func (api *apiConfig) handleFeedsGet(w http.ResponseWriter, r *http.Request) {
