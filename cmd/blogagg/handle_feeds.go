@@ -12,12 +12,13 @@ import (
 )
 
 type feed struct {
-	ID        uuid.UUID `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Name      string    `json:"name"`
-	URL       string    `json:"url"`
-	UserID    uuid.UUID `json:"user_id"`
+	ID            uuid.UUID  `json:"id"`
+	CreatedAt     time.Time  `json:"created_at"`
+	UpdatedAt     time.Time  `json:"updated_at"`
+	Name          string     `json:"name"`
+	URL           string     `json:"url"`
+	UserID        uuid.UUID  `json:"user_id"`
+	LastFetchedAt *time.Time `json:"last_fetched_at"`
 }
 
 type feedWithFollow struct {
@@ -88,12 +89,18 @@ func (api *apiConfig) handleFeedsGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func dbFeedToFeed(dbFeed database.Feed) feed {
+	var lastFetchedAt *time.Time
+	if dbFeed.LastFetchedAt.Valid {
+		lastFetchedAt = &dbFeed.LastFetchedAt.Time
+	}
+
 	return feed{
-		ID:        dbFeed.ID,
-		CreatedAt: dbFeed.CreatedAt,
-		UpdatedAt: dbFeed.UpdatedAt,
-		Name:      dbFeed.Name,
-		URL:       dbFeed.Url,
-		UserID:    dbFeed.UserID,
+		ID:            dbFeed.ID,
+		CreatedAt:     dbFeed.CreatedAt,
+		UpdatedAt:     dbFeed.UpdatedAt,
+		Name:          dbFeed.Name,
+		URL:           dbFeed.Url,
+		UserID:        dbFeed.UserID,
+		LastFetchedAt: lastFetchedAt,
 	}
 }
