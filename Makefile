@@ -1,5 +1,8 @@
 include .env
 
+run:
+	go run ./cmd/blogagg
+
 gup:
 	cd sql/schema && goose postgres ${DBURL} up
 
