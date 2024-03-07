@@ -1,3 +1,4 @@
+// Package feedfetch contains types and functions to fetch RSS feeds
 package feedfetch
 
 import (
@@ -7,34 +8,36 @@ import (
 	"net/http"
 )
 
-type rssFeed struct {
-	XMLName xml.Name   `xml:"rss"`
-	Channel rssChannel `xml:"channel"`
+// RSSFeed is the struct representation of the outer RSS feed tags
+type RSSFeed struct {
+	XMLName xml.Name `xml:"rss"`
+	Channel struct {
+		Title string    `xml:"title"`
+		Items []RSSItem `xml:"item"`
+	} `xml:"channel"`
 }
 
-type rssChannel struct {
-	Title string    `xml:"title"`
-	Items []rssItem `xml:"item"`
-}
-
-type rssItem struct {
+// RSSItem is the struct representation of the tags for individual posts in an
+// RSS feed
+type RSSItem struct {
 	Title       string `xml:"title"`
 	Description string `xml:"description"`
 	Link        string `xml:"link"`
 }
 
-func GetFomURL(url string) (rssFeed, error) {
-	rss := rssFeed{}
+// GetFomURL fetches a single RSS feed of the given URL
+func GetFomURL(url string) (RSSFeed, error) {
+	rss := RSSFeed{}
 
 	r, err := http.Get(url)
 	if err != nil {
-		return rssFeed{}, fmt.Errorf("error fetching -- %v", err)
+		return RSSFeed{}, fmt.Errorf("error fetching -- %v", err)
 	}
 	defer r.Body.Close()
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return rssFeed{}, fmt.Errorf("error reading body -- %v", err)
+		return RSSFeed{}, fmt.Errorf("error reading body -- %v", err)
 	}
 
 	xml.Unmarshal(body, &rss)
