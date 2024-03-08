@@ -23,6 +23,7 @@ type RSSItem struct {
 	Title       string `xml:"title"`
 	Description string `xml:"description"`
 	Link        string `xml:"link"`
+	PubDate     string `xml:"pubDate"`
 }
 
 // GetFomURL fetches a single RSS feed of the given URL

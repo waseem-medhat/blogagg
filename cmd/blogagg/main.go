@@ -12,6 +12,7 @@ import (
 
 	chi "github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/wipdev-tech/blogagg/internal/database"
@@ -45,6 +46,31 @@ func (api *apiConfig) FetchFeeds(n int32) {
 			}
 			feeds = append(feeds, feed)
 
+			itemsToStore := feed.Channel.Items
+			if len(itemsToStore) > 10 {
+				itemsToStore = itemsToStore[:10]
+			}
+
+			for _, post := range itemsToStore {
+				pubDate, err := time.Parse(time.Layout, post.PubDate)
+				dbPubDate := sql.NullTime{Time: pubDate, Valid: true}
+				if err != nil {
+					fmt.Println("couldn't parse date -- ", err)
+					dbPubDate.Valid = false
+				}
+
+				api.DB.CreatePost(ctx, database.CreatePostParams{
+					ID:          uuid.New(),
+					CreatedAt:   time.Now(),
+					UpdatedAt:   time.Now(),
+					Title:       sql.NullString{String: post.Title, Valid: true},
+					Url:         post.Link,
+					Description: sql.NullString{String: post.Description, Valid: true},
+					PublishedAt: dbPubDate,
+					FeedID:      dbFeed.ID,
+				})
+			}
+
 			api.DB.MarkFeedFetched(ctx, database.MarkFeedFetchedParams{
 				ID:            dbFeed.ID,
 				LastFetchedAt: sql.NullTime{Time: time.Now(), Valid: true},
@@ -56,6 +82,13 @@ func (api *apiConfig) FetchFeeds(n int32) {
 	fmt.Println("\nFetched:")
 	for _, r := range feeds {
 		fmt.Println(r.Channel.Title)
+	}
+}
+
+func (api *apiConfig) StartFetchWorker() {
+	ticker := time.NewTicker(10 * time.Second)
+	for range ticker.C {
+		api.FetchFeeds(2)
 	}
 }
 
@@ -82,13 +115,7 @@ func main() {
 
 	api := apiConfig{}
 	api.DB = database.New(db)
-
-	go func() {
-		ticker := time.NewTicker(1 * time.Minute)
-		for range ticker.C {
-			api.FetchFeeds(2)
-		}
-	}()
+	go api.StartFetchWorker()
 
 	r := chi.NewRouter()
 	r.Use(cors.Handler(cors.Options{}))
